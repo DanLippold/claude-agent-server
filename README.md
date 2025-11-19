@@ -64,6 +64,7 @@ type QueryConfig = {
         preset: 'claude_code'
         append?: string
       }
+  model?: string
   anthropicApiKey?: string
 }
 ```
@@ -77,6 +78,7 @@ curl -X POST http://localhost:3000/config \
     "systemPrompt": "You are a helpful assistant.",
     "allowedTools": ["read_file", "write_file"],
     "anthropicApiKey": "sk-ant-...",
+    "model": "claude-3-5-sonnet-20241022",
     "agents": {
       "myAgent": {
         "name": "My Custom Agent",

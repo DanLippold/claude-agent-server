@@ -49,5 +49,6 @@ export type QueryConfig = {
         preset: 'claude_code'
         append?: string
       }
+  model?: string
   anthropicApiKey?: string
 }
