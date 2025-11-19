@@ -22,7 +22,7 @@ const template = Template()
   .setWorkdir('/home/user/app')
   .runCmd('ls -la')
   .runCmd('bun install')
-  .setStartCmd('bun packages/server/index.ts', waitForPort(SERVER_PORT))
+  .setStartCmd('bun run start:server', waitForPort(SERVER_PORT))
 
 async function main() {
   await Template.build(template, {
