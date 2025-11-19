@@ -47,6 +47,7 @@ type QueryConfig = {
         preset: 'claude_code'
         append?: string
       }
+  anthropicApiKey?: string
 }
 ```
 
@@ -58,6 +59,7 @@ curl -X POST http://localhost:3000/config \
   -d '{
     "systemPrompt": "You are a helpful assistant.",
     "allowedTools": ["read_file", "write_file"],
+    "anthropicApiKey": "sk-ant-...",
     "agents": {
       "myAgent": {
         "name": "My Custom Agent",
@@ -375,7 +377,23 @@ const server = Bun.serve<SessionData>({
 
 ## Environment Variables
 
-Make sure you have the required environment variables for the Claude Agent SDK (e.g., `ANTHROPIC_API_KEY` if required by your SDK configuration).
+The server supports setting the Anthropic API key in two ways:
+
+1. **Via Configuration API** (recommended): Set `anthropicApiKey` in the `/config` endpoint:
+
+   ```bash
+   curl -X POST http://localhost:3000/config \
+     -H "Content-Type: application/json" \
+     -d '{"anthropicApiKey": "sk-ant-..."}'
+   ```
+
+2. **Via Environment Variable**: Set `ANTHROPIC_API_KEY` in your environment before starting the server:
+   ```bash
+   export ANTHROPIC_API_KEY=sk-ant-...
+   bun index.ts
+   ```
+
+**Note:** The API key set via the configuration endpoint will override any environment variable.
 
 ## License
 

@@ -47,6 +47,11 @@ async function processMessages() {
       settingSources: ['local'],
       cwd: workspaceDirectory,
       ...queryConfig,
+      ...(queryConfig.anthropicApiKey && {
+        env: {
+          ANTHROPIC_API_KEY: queryConfig.anthropicApiKey,
+        },
+      }),
     }
 
     activeStream = query({
