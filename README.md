@@ -17,24 +17,20 @@ bun install
 
 ### Environment Setup
 
-Create a `.env` file in the relevant package directories:
+Create a `.env` file in the root directory:
 
 ```bash
-# For Server
-cp packages/server/.env.example packages/server/.env
-
-# For Client
-cp packages/client/.env.example packages/client/.env
+cp .env.example .env
 ```
 
-Then edit the `.env` files and add your API keys:
+Then edit the `.env` file and add your API keys:
 
 ```bash
 ANTHROPIC_API_KEY=sk-ant-your-api-key-here
 E2B_API_KEY=e2b_your-api-key-here  # Optional, only for E2B deployment
 ```
 
-**Note:** Bun automatically loads `.env` files - no additional packages required!
+**Note:** The scripts in `package.json` are configured to automatically load this root `.env` file.
 
 ## Usage
 
@@ -332,7 +328,7 @@ This project can be deployed to [E2B](https://e2b.dev/) sandboxes for secure, is
 
 1. Create an E2B account at [e2b.dev](https://e2b.dev/)
 2. Get your E2B API key from the [dashboard](https://e2b.dev/dashboard?tab=keys)
-3. Add your E2B API key to `packages/client/.env`:
+3. Add your E2B API key to the root `.env`:
    ```bash
    E2B_API_KEY=e2b_your-api-key-here
    ```
@@ -360,7 +356,7 @@ The build process may take a few minutes. Once complete, the template will be av
 The example client (`packages/client/example-client.ts`) automatically uses E2B when both `E2B_API_KEY` and `ANTHROPIC_API_KEY` are set:
 
 ```bash
-# Make sure both API keys are in your packages/client/.env file
+# Make sure both API keys are in your root .env file
 bun run test:client
 ```
 
@@ -434,10 +430,10 @@ const server = Bun.serve<SessionData>({
 
 The server supports setting the Anthropic API key in three ways:
 
-1. **Via `.env` file** (recommended for local development): Create a `.env` file in `packages/server`:
+1. **Via `.env` file** (recommended for local development): Create a `.env` file in the project root:
 
    ```bash
-   cp packages/server/.env.example packages/server/.env
+   cp .env.example .env
    ```
 
    Then edit `.env` and set your API key:
@@ -446,7 +442,7 @@ The server supports setting the Anthropic API key in three ways:
    ANTHROPIC_API_KEY=sk-ant-...
    ```
 
-   Bun automatically loads `.env` files when running the server.
+   The provided npm scripts are configured to load this file.
 
 2. **Via Configuration API** (recommended for runtime configuration): Set `anthropicApiKey` in the `/config` endpoint:
 
