@@ -24,6 +24,7 @@ bun index.ts
 ```
 
 The server will start on `http://localhost:3000` with:
+
 - Config endpoint: `http://localhost:3000/config`
 - WebSocket endpoint: `ws://localhost:3000/ws`
 
@@ -37,14 +38,16 @@ Set the configuration for the Claude Agent SDK query:
 
 ```typescript
 type QueryConfig = {
-  agents?: Record<string, AgentDefinition>;
-  allowedTools?: string[];
-  systemPrompt?: string | {
-    type: 'preset';
-    preset: 'claude_code';
-    append?: string;
-  };
-};
+  agents?: Record<string, AgentDefinition>
+  allowedTools?: string[]
+  systemPrompt?:
+    | string
+    | {
+        type: 'preset'
+        preset: 'claude_code'
+        append?: string
+      }
+}
 ```
 
 **Example:**
@@ -103,7 +106,7 @@ curl http://localhost:3000/config
 Connect to the WebSocket endpoint:
 
 ```javascript
-const ws = new WebSocket('ws://localhost:3000/ws');
+const ws = new WebSocket('ws://localhost:3000/ws')
 ```
 
 **Note:** The server only accepts **one active connection at a time**. If another client is already connected, new connection attempts will be rejected with an error message.
@@ -113,14 +116,14 @@ const ws = new WebSocket('ws://localhost:3000/ws');
 **Sending Messages (Client → Server)**
 
 ```typescript
-type WSInputMessage = 
+type WSInputMessage =
   | {
-      type: 'user_message';
-      data: SDKUserMessage;
+      type: 'user_message'
+      data: SDKUserMessage
     }
   | {
-      type: 'interrupt';
-    };
+      type: 'interrupt'
+    }
 ```
 
 **User Message:**
@@ -143,6 +146,7 @@ Send a wrapped `SDKUserMessage`:
 ```
 
 **Structure:**
+
 - `type`: Must be `"user_message"`
 - `data`: An `SDKUserMessage` object containing:
   - `type`: Must be `"user"`
@@ -166,13 +170,14 @@ Send an interrupt to stop the current agent operation:
 **Receiving Messages (Server → Client)**
 
 ```typescript
-type WSOutputMessage = 
+type WSOutputMessage =
   | { type: 'connected' }
   | { type: 'sdk_message'; data: unknown }
-  | { type: 'error'; error: string };
+  | { type: 'error'; error: string }
 ```
 
 Connection confirmation:
+
 ```json
 {
   "type": "connected"
@@ -180,18 +185,22 @@ Connection confirmation:
 ```
 
 SDK messages (responses from Claude):
+
 ```json
 {
   "type": "sdk_message",
   "data": {
     "type": "assistant",
     "session_id": "...",
-    "message": { /* Claude's response */ }
+    "message": {
+      /* Claude's response */
+    }
   }
 }
 ```
 
 Error messages:
+
 ```json
 {
   "type": "error",
@@ -202,7 +211,7 @@ Error messages:
 ### Example Client (Node.js/Bun)
 
 ```typescript
-import { WebSocket } from 'ws'; // or use Bun's built-in WebSocket
+import { WebSocket } from 'ws' // or use Bun's built-in WebSocket
 
 // Optional: Configure the query before connecting
 await fetch('http://localhost:3000/config', {
@@ -210,84 +219,88 @@ await fetch('http://localhost:3000/config', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     systemPrompt: 'You are a helpful coding assistant.',
-    allowedTools: ['read_file', 'write_file']
-  })
-});
+    allowedTools: ['read_file', 'write_file'],
+  }),
+})
 
 // Connect to WebSocket
-const ws = new WebSocket('ws://localhost:3000/ws');
-const sessionId = crypto.randomUUID();
+const ws = new WebSocket('ws://localhost:3000/ws')
+const sessionId = crypto.randomUUID()
 
 ws.on('open', () => {
-  console.log('Connected to Claude Agent SDK');
-  
-  // Send a message
-  ws.send(JSON.stringify({
-    type: 'user_message',
-    data: {
-      type: 'user',
-      session_id: sessionId,
-      parent_tool_use_id: null,
-      message: {
-        role: 'user',
-        content: 'What is the capital of France?'
-      }
-    }
-  }));
-});
+  console.log('Connected to Claude Agent SDK')
 
-ws.on('message', (data) => {
-  const message = JSON.parse(data.toString());
-  
+  // Send a message
+  ws.send(
+    JSON.stringify({
+      type: 'user_message',
+      data: {
+        type: 'user',
+        session_id: sessionId,
+        parent_tool_use_id: null,
+        message: {
+          role: 'user',
+          content: 'What is the capital of France?',
+        },
+      },
+    }),
+  )
+})
+
+ws.on('message', data => {
+  const message = JSON.parse(data.toString())
+
   if (message.type === 'sdk_message') {
-    console.log('Claude:', message.data);
+    console.log('Claude:', message.data)
   } else if (message.type === 'error') {
-    console.error('Error:', message.error);
+    console.error('Error:', message.error)
   }
-});
+})
 
 ws.on('close', () => {
-  console.log('Disconnected');
-});
+  console.log('Disconnected')
+})
 ```
 
 ### Example Client (Browser)
 
 ```javascript
-const ws = new WebSocket('ws://localhost:3000/ws');
-const sessionId = crypto.randomUUID();
+const ws = new WebSocket('ws://localhost:3000/ws')
+const sessionId = crypto.randomUUID()
 
 ws.onopen = () => {
-  console.log('Connected to Claude Agent SDK');
-  
-  // Send a message
-  ws.send(JSON.stringify({
-    type: 'user_message',
-    data: {
-      type: 'user',
-      session_id: sessionId,
-      parent_tool_use_id: null,
-      message: {
-        role: 'user',
-        content: 'Hello, Claude!'
-      }
-    }
-  }));
-};
+  console.log('Connected to Claude Agent SDK')
 
-ws.onmessage = (event) => {
-  const message = JSON.parse(event.data);
-  
+  // Send a message
+  ws.send(
+    JSON.stringify({
+      type: 'user_message',
+      data: {
+        type: 'user',
+        session_id: sessionId,
+        parent_tool_use_id: null,
+        message: {
+          role: 'user',
+          content: 'Hello, Claude!',
+        },
+      },
+    }),
+  )
+}
+
+ws.onmessage = event => {
+  const message = JSON.parse(event.data)
+
   if (message.type === 'sdk_message') {
-    console.log('Claude:', message.data);
+    console.log('Claude:', message.data)
   } else if (message.type === 'error') {
-    console.error('Error:', message.error);
+    console.error('Error:', message.error)
   }
-};
+}
 
 ws.onclose = () => {
-  console.log('Disconnected');
-};
+  console.log('Disconnected')
+}
 ```
 
 ## Architecture
@@ -303,6 +316,7 @@ The server is a simple **1-to-1 relay** between a single WebSocket client and th
 7. **Cleanup**: When the client disconnects, the server is ready to accept a new connection
 
 **Key Design Principles:**
+
 - **Pre-connection configuration**: Configure query options via `/config` endpoint before connecting
 - **Lazy initialization**: Query stream only starts when first WebSocket connection is made
 - **Single connection only**: Server rejects additional connection attempts while one is active
@@ -311,11 +325,29 @@ The server is a simple **1-to-1 relay** between a single WebSocket client and th
 - **Interrupt support**: Clients can send interrupt messages to stop ongoing operations
 - **Direct routing**: All SDK responses go to the single active WebSocket connection
 
+## Project Structure
+
+The codebase follows a modular structure with **dash-case** naming convention for files:
+
+```
+claude-agent-server/
+├── index.ts              # Main server entry point
+├── message-types.ts      # TypeScript type definitions for WebSocket messages
+├── message-handler.ts    # WebSocket message handling logic
+└── example-client.ts     # Example client implementation
+```
+
+**File Naming Convention:**
+
+- All TypeScript files use **dash-case** (e.g., `message-types.ts`, `message-handler.ts`)
+- This improves readability and consistency across the codebase
+
 ## Testing
 
 ### Web Test Client
 
 Open `http://localhost:3000/` in your browser to access the built-in test client. You can:
+
 - Send messages to Claude
 - See real-time responses
 - View the full JSON structure of SDK messages
@@ -338,7 +370,7 @@ The server uses port 3000 by default. You can modify this in `index.ts`:
 const server = Bun.serve<SessionData>({
   port: 3000, // Change this
   // ...
-});
+})
 ```
 
 ## Environment Variables

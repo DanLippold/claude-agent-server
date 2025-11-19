@@ -1,61 +1,14 @@
-import { readdir, readFile, unlink, writeFile } from 'fs/promises'
 import { homedir } from 'os'
 import { join } from 'path'
 import {
   query,
-  type AgentDefinition,
   type Options,
-  type SDKMessage,
   type SDKUserMessage,
 } from '@anthropic-ai/claude-agent-sdk'
 import { type ServerWebSocket } from 'bun'
 
-// WebSocket message types
-export type WSInputMessage =
-  | {
-      type: 'user_message'
-      data: SDKUserMessage
-    }
-  | { type: 'interrupt' }
-  | {
-      type: 'create_file'
-      path: string
-      content: string
-      encoding?: 'utf-8' | 'base64'
-    }
-  | { type: 'read_file'; path: string; encoding?: 'utf-8' | 'base64' }
-  | { type: 'delete_file'; path: string }
-  | { type: 'list_files'; path?: string }
-
-export type WSOutputMessage =
-  | { type: 'connected' }
-  | { type: 'sdk_message'; data: SDKMessage }
-  | { type: 'error'; error: string }
-  | {
-      type: 'file_result'
-      operation: 'create_file' | 'delete_file'
-      result: 'success'
-    }
-  | {
-      type: 'file_result'
-      operation: 'read_file'
-      result: string
-      encoding: 'utf-8' | 'base64'
-    }
-  | { type: 'file_result'; operation: 'list_files'; result: string[] }
-
-// Configuration type for the query options
-export type QueryConfig = {
-  agents?: Record<string, AgentDefinition>
-  allowedTools?: string[]
-  systemPrompt?:
-    | string
-    | {
-        type: 'preset'
-        preset: 'claude_code'
-        append?: string
-      }
-}
+import { handleMessage } from './message-handler'
+import { type QueryConfig, type WSOutputMessage } from './message-types'
 
 const workspaceDirectory = join(homedir(), 'agent-workspace')
 
@@ -178,103 +131,11 @@ const server = Bun.serve({
     },
 
     async message(ws, message) {
-      const input = JSON.parse(message.toString()) as WSInputMessage
-      if (input.type === 'user_message') {
-        messageQueue.push(input.data)
-      } else if (input.type === 'interrupt') {
-        activeStream?.interrupt()
-      } else if (input.type === 'create_file') {
-        const targetPath = join(workspaceDirectory, input.path)
-        const encoding = input.encoding || 'utf-8'
-        const content =
-          encoding === 'base64'
-            ? Buffer.from(input.content, 'base64')
-            : input.content
-
-        writeFile(targetPath, content)
-          .then(() => {
-            ws.send(
-              JSON.stringify({
-                type: 'file_result',
-                operation: 'create_file',
-                result: 'success',
-              }),
-            )
-          })
-          .catch(err => {
-            ws.send(
-              JSON.stringify({
-                type: 'error',
-                error: `Failed to create file: ${err.message}`,
-              }),
-            )
-          })
-      } else if (input.type === 'read_file') {
-        const targetPath = join(workspaceDirectory, input.path)
-        const encoding = input.encoding || 'utf-8'
-
-        readFile(targetPath, encoding === 'base64' ? 'base64' : 'utf-8')
-          .then(content => {
-            ws.send(
-              JSON.stringify({
-                type: 'file_result',
-                operation: 'read_file',
-                result: content,
-                encoding,
-              }),
-            )
-          })
-          .catch(err => {
-            ws.send(
-              JSON.stringify({
-                type: 'error',
-                error: `Failed to read file: ${err.message}`,
-              }),
-            )
-          })
-      } else if (input.type === 'delete_file') {
-        const targetPath = join(workspaceDirectory, input.path)
-        unlink(targetPath)
-          .then(() => {
-            ws.send(
-              JSON.stringify({
-                type: 'file_result',
-                operation: 'delete_file',
-                result: 'success',
-              }),
-            )
-          })
-          .catch(err => {
-            ws.send(
-              JSON.stringify({
-                type: 'error',
-                error: `Failed to delete file: ${err.message}`,
-              }),
-            )
-          })
-      } else if (input.type === 'list_files') {
-        const targetPath = input.path
-          ? join(workspaceDirectory, input.path)
-          : workspaceDirectory
-        readdir(targetPath)
-          .then(files => {
-            ws.send(
-              JSON.stringify({
-                type: 'file_result',
-                operation: 'list_files',
-                result: files,
-              }),
-            )
-          })
-          .catch(err => {
-            ws.send(
-              JSON.stringify({
-                type: 'error',
-                error: `Failed to list files: ${err.message}`,
-              }),
-            )
-          })
-      }
+      await handleMessage(ws, message, {
+        messageQueue,
+        getActiveStream: () => activeStream,
+        workspaceDirectory,
+      })
     },
 
     close(ws) {
