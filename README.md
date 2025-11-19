@@ -7,7 +7,7 @@ A WebSocket server that wraps the Claude Agent SDK, allowing real-time bidirecti
 **Typical Workflow:**
 
 1. **Build Your E2B Image** - Deploy the server as an E2B sandbox template using `bun run build:e2b`
-2. **Use the Client Library** - Install `@claude-agent/client` in your project and connect to your E2B sandbox
+2. **Use the Client Library** - Install `@dzhng/claude-agent` in your project and connect to your E2B sandbox
 3. **Modify the Server (Optional)** - If you need custom behavior, edit the server code in `packages/server/`
 4. **Test Locally** - Use `bun run start:server` and `bun run test:local` to test your changes before rebuilding
 
@@ -56,15 +56,15 @@ The build may take a few minutes. Once complete, your template is ready to use.
 Install the client library in your project:
 
 ```bash
-npm install @claude-agent/client
+npm install @dzhng/claude-agent
 # or
-bun add @claude-agent/client
+bun add @dzhng/claude-agent
 ```
 
 Connect to your E2B sandbox:
 
 ```typescript
-import { ClaudeAgentClient } from '@claude-agent/client'
+import { ClaudeAgentClient } from '@dzhng/claude-agent'
 
 const client = new ClaudeAgentClient({
   e2bApiKey: process.env.E2B_API_KEY,
@@ -165,14 +165,12 @@ Runs the example client connected to `localhost:3000`. Use this to test your loc
 
 ## Client Library API
 
-The `@claude-agent/client` package provides a high-level TypeScript client for connecting to the server.
-
 ### Installation
 
 ```bash
-npm install @claude-agent/client
+npm install @dzhng/claude-agent
 # or
-bun add @claude-agent/client
+bun add @dzhng/claude-agent
 ```
 
 ### Constructor Options
@@ -213,7 +211,7 @@ interface ClientOptions {
 ### Example: Connect to E2B
 
 ```typescript
-import { ClaudeAgentClient } from '@claude-agent/client'
+import { ClaudeAgentClient } from '@dzhng/claude-agent'
 
 const client = new ClaudeAgentClient({
   e2bApiKey: process.env.E2B_API_KEY,
@@ -257,7 +255,7 @@ For more details, see [`packages/client/README.md`](packages/client/README.md).
 
 ## Server API Reference
 
-**Note:** If you're using the `@claude-agent/client` library, you don't need to interact with these endpoints directly. The client handles configuration and WebSocket connections for you. This section is for advanced users who want to connect to the server directly or build their own client.
+**Note:** If you're using the `@dzhng/claude-agent` library, you don't need to interact with these endpoints directly. The client handles configuration and WebSocket connections for you. This section is for advanced users who want to connect to the server directly or build their own client.
 
 The server runs on `http://localhost:3000` (or your E2B sandbox URL) with:
 
@@ -517,7 +515,7 @@ This section provides additional details about E2B deployment. For the basic set
 By default, `bun run build:e2b` creates a template named `claude-agent-server`. To use a different name, you can modify `packages/e2b-build/build.prod.ts` or specify it when using the client:
 
 ```typescript
-import { ClaudeAgentClient } from '@claude-agent/client'
+import { ClaudeAgentClient } from '@dzhng/claude-agent'
 
 const client = new ClaudeAgentClient({
   template: 'my-custom-template', // Use your custom template name
