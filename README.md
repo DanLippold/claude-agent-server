@@ -351,6 +351,24 @@ This will:
 
 The build process may take a few minutes. Once complete, the template will be available for creating sandboxes.
 
+### Customizing the Template Name
+
+You can customize the E2B template name when using the client library by passing the `template` option:
+
+```typescript
+import { ClaudeAgentClient } from '@claude-agent/client'
+
+const client = new ClaudeAgentClient({
+  template: 'my-custom-template', // Use your custom template name
+  e2bApiKey: process.env.E2B_API_KEY,
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+})
+
+await client.start()
+```
+
+If you don't specify a template, it defaults to `'claude-agent-server'`.
+
 ### Running with E2B
 
 The example client (`packages/client/example-client.ts`) automatically uses E2B when both `E2B_API_KEY` and `ANTHROPIC_API_KEY` are set:

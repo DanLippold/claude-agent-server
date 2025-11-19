@@ -7,11 +7,19 @@ export * from './types'
 export const DEFAULT_TEMPLATE = 'claude-agent-server'
 export const SERVER_PORT = 3000
 
+/**
+ * Configuration options for the Claude Agent Client
+ */
 export interface ClientOptions extends Partial<QueryConfig> {
+  /** E2B API key (required for E2B mode, not needed if using connectionUrl) */
   e2bApiKey?: string
+  /** E2B template name to use for creating sandboxes. Defaults to 'claude-agent-server' */
   template?: string
+  /** Timeout in milliseconds for sandbox operations. Defaults to 5 minutes */
   timeoutMs?: number
+  /** Enable debug logging */
   debug?: boolean
+  /** Custom connection URL (e.g., 'http://localhost:3000'). If set, E2B mode is disabled */
   connectionUrl?: string
 }
 

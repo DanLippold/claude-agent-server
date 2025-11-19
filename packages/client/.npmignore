@@ -1,0 +1,4 @@
+example-client.ts
+*.test.ts
+tsconfig.json
+.gitignore
