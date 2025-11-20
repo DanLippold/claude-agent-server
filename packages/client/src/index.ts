@@ -5,6 +5,7 @@ import {
   type WatchHandle,
 } from 'e2b'
 
+import { WORKSPACE_DIR_NAME } from '../../server/const'
 import type {
   QueryConfig,
   WSInputMessage,
@@ -155,11 +156,22 @@ export class ClaudeAgentClient {
     this.ws.send(JSON.stringify(message))
   }
 
+  private resolvePath(path: string): string {
+    // If path starts with /, it's absolute, otherwise make it relative to workspace
+    if (path.startsWith('/')) {
+      return path
+    }
+    if (path === '.') {
+      return `/home/user/${WORKSPACE_DIR_NAME}`
+    }
+    return `/home/user/${WORKSPACE_DIR_NAME}/${path}`
+  }
+
   async writeFile(path: string, content: string | Blob) {
     if (!this.sandbox) {
       throw new Error('Sandbox not initialized')
     }
-    return this.sandbox.files.write(path, content)
+    return this.sandbox.files.write(this.resolvePath(path), content)
   }
 
   async readFile(
@@ -169,24 +181,25 @@ export class ClaudeAgentClient {
     if (!this.sandbox) {
       throw new Error('Sandbox not initialized')
     }
+    const resolvedPath = this.resolvePath(path)
     if (format === 'blob') {
-      return this.sandbox.files.read(path, { format })
+      return this.sandbox.files.read(resolvedPath, { format })
     }
-    return this.sandbox.files.read(path)
+    return this.sandbox.files.read(resolvedPath)
   }
 
   async removeFile(path: string) {
     if (!this.sandbox) {
       throw new Error('Sandbox not initialized')
     }
-    return this.sandbox.files.remove(path)
+    return this.sandbox.files.remove(this.resolvePath(path))
   }
 
   async listFiles(path = '.') {
     if (!this.sandbox) {
       throw new Error('Sandbox not initialized')
     }
-    return this.sandbox.files.list(path)
+    return this.sandbox.files.list(this.resolvePath(path))
   }
 
   async watchDir(
@@ -200,7 +213,7 @@ export class ClaudeAgentClient {
     if (!this.sandbox) {
       throw new Error('Sandbox not initialized')
     }
-    return this.sandbox.files.watchDir(path, onEvent, opts)
+    return this.sandbox.files.watchDir(this.resolvePath(path), onEvent, opts)
   }
 
   async stop() {
