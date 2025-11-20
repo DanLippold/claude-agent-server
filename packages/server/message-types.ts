@@ -1,5 +1,7 @@
 import {
   type AgentDefinition,
+  type McpHttpServerConfig,
+  type McpSSEServerConfig,
   type SDKMessage,
   type SDKUserMessage,
 } from '@anthropic-ai/claude-agent-sdk'
@@ -39,6 +41,8 @@ export type WSOutputMessage =
     }
   | { type: 'file_result'; operation: 'list_files'; result: string[] }
 
+export type McpRemoteServerConfig = McpHttpServerConfig | McpSSEServerConfig
+
 // Configuration type for the query options
 export type QueryConfig = {
   agents?: Record<string, AgentDefinition>
@@ -51,5 +55,6 @@ export type QueryConfig = {
         append?: string
       }
   model?: string
+  mcpServers?: Record<string, McpRemoteServerConfig>
   anthropicApiKey?: string
 }
