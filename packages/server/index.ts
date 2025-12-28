@@ -45,7 +45,7 @@ async function processMessages() {
     const options: Options = {
       permissionMode: 'bypassPermissions',
       allowDangerouslySkipPermissions: true,
-      settingSources: ['local'],
+      settingSources: ['project'],
       cwd: workspaceDirectory,
       stderr: data => {
         if (activeConnection) {
