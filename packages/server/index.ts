@@ -1,11 +1,12 @@
 import { homedir } from 'os'
 import { join } from 'path'
+import { createServer } from 'http'
 import {
   query,
   type Options,
   type SDKUserMessage,
 } from '@anthropic-ai/claude-agent-sdk'
-import { type ServerWebSocket } from 'bun'
+import { WebSocketServer, type WebSocket } from 'ws'
 
 import { SERVER_PORT, WORKSPACE_DIR_NAME } from './const'
 import { handleMessage } from './message-handler'
@@ -14,7 +15,7 @@ import { type QueryConfig, type WSOutputMessage } from './message-types'
 const workspaceDirectory = join(homedir(), WORKSPACE_DIR_NAME)
 
 // Single WebSocket connection (only one allowed)
-let activeConnection: ServerWebSocket | null = null
+let activeConnection: WebSocket | null = null
 
 // Message queue
 const messageQueue: SDKUserMessage[] = []
@@ -93,76 +94,78 @@ async function processMessages() {
   }
 }
 
-// Create WebSocket server
-const server = Bun.serve({
-  port: SERVER_PORT,
-  fetch(req, server) {
-    const url = new URL(req.url)
+// Create HTTP server
+const server = createServer(async (req, res) => {
+  const url = new URL(req.url!, `http://localhost:${SERVER_PORT}`)
 
-    // Configuration endpoint
-    if (url.pathname === '/config' && req.method === 'POST') {
-      return req
-        .json()
-        .then(config => {
-          queryConfig = config as QueryConfig
-          return Response.json({ success: true, config: queryConfig })
-        })
-        .catch(() => {
-          return Response.json({ error: 'Invalid JSON' }, { status: 400 })
-        })
-    }
-
-    // Get current configuration
-    if (url.pathname === '/config' && req.method === 'GET') {
-      return Response.json({ config: queryConfig })
-    }
-
-    // WebSocket endpoint
-    if (url.pathname === '/ws') {
-      if (server.upgrade(req)) return
-    }
-
-    return new Response('Not Found', { status: 404 })
-  },
-
-  websocket: {
-    open(ws) {
-      if (activeConnection) {
-        const output: WSOutputMessage = {
-          type: 'error',
-          error: 'Server already has an active connection',
-        }
-        ws.send(JSON.stringify(output))
-        ws.close()
-        return
+  // Configuration endpoint
+  if (url.pathname === '/config' && req.method === 'POST') {
+    let body = ''
+    req.on('data', chunk => (body += chunk))
+    req.on('end', () => {
+      try {
+        queryConfig = JSON.parse(body) as QueryConfig
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ success: true, config: queryConfig }))
+      } catch {
+        res.writeHead(400, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: 'Invalid JSON' }))
       }
+    })
+    return
+  }
 
-      activeConnection = ws
+  // Get current configuration
+  if (url.pathname === '/config' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ config: queryConfig }))
+    return
+  }
 
-      // Start processing messages when first connection is made
-      if (!activeStream) {
-        processMessages()
-      }
-
-      const output: WSOutputMessage = { type: 'connected' }
-      ws.send(JSON.stringify(output))
-    },
-
-    async message(ws, message) {
-      await handleMessage(ws, message, {
-        messageQueue,
-        getActiveStream: () => activeStream,
-      })
-    },
-
-    close(ws) {
-      if (activeConnection === ws) {
-        activeConnection = null
-      }
-    },
-  },
+  res.writeHead(404)
+  res.end('Not Found')
 })
 
-console.log(`🚀 WebSocket server running on http://localhost:${server.port}`)
-console.log(`   Config endpoint: http://localhost:${server.port}/config`)
-console.log(`   WebSocket endpoint: ws://localhost:${server.port}/ws`)
+// Create WebSocket server on /ws path
+const wss = new WebSocketServer({ server, path: '/ws' })
+
+wss.on('connection', ws => {
+  if (activeConnection) {
+    const output: WSOutputMessage = {
+      type: 'error',
+      error: 'Server already has an active connection',
+    }
+    ws.send(JSON.stringify(output))
+    ws.close()
+    return
+  }
+
+  activeConnection = ws
+
+  // Start processing messages when first connection is made
+  if (!activeStream) {
+    processMessages()
+  }
+
+  const output: WSOutputMessage = { type: 'connected' }
+  ws.send(JSON.stringify(output))
+
+  ws.on('message', async message => {
+    await handleMessage(ws, message, {
+      messageQueue,
+      getActiveStream: () => activeStream,
+    })
+  })
+
+  ws.on('close', () => {
+    if (activeConnection === ws) {
+      activeConnection = null
+    }
+  })
+})
+
+server.listen(SERVER_PORT, () => {
+  console.log(`🚀 WebSocket server running on http://localhost:${SERVER_PORT}`)
+  console.log(`   Config endpoint: http://localhost:${SERVER_PORT}/config`)
+  console.log(`   WebSocket endpoint: ws://localhost:${SERVER_PORT}/ws`)
+})

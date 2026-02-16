@@ -3,12 +3,13 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "bun run build.prod.ts"
+    "build": "npx tsx build.prod.ts"
   },
   "dependencies": {
     "e2b": "^2.7.0"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/node": "^22",
+    "tsx": "^4"
   }
 }

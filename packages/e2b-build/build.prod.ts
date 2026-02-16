@@ -11,7 +11,7 @@ import {
 } from '../server/const'
 
 const template = Template()
-  .fromBunImage('1.3')
+  .fromNodeImage('22')
   .runCmd('pwd')
   .makeDir(`/home/user/${WORKSPACE_DIR_NAME}`)
   .runCmd('sudo apt install -y git')
@@ -21,8 +21,8 @@ const template = Template()
   })
   .setWorkdir('/home/user/app')
   .runCmd('ls -la')
-  .runCmd('bun install')
-  .setStartCmd('bun run start:sandbox', waitForPort(SERVER_PORT))
+  .runCmd('npm install')
+  .setStartCmd('npm run start:sandbox', waitForPort(SERVER_PORT))
 
 async function main() {
   await Template.build(template, {

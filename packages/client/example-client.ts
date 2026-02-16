@@ -1,7 +1,7 @@
 /**
  * Example WebSocket client for the Claude Agent SDK server
  *
- * Usage: bun example-client.ts
+ * Usage: npx tsx example-client.ts
  */
 
 import { ClaudeAgentClient } from './src/index'

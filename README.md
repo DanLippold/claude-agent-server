@@ -35,7 +35,7 @@ E2B_API_KEY=e2b_your-api-key-here
 Install dependencies:
 
 ```bash
-bun install
+npm install
 ```
 
 ### 2. Build Your E2B Image
@@ -43,7 +43,7 @@ bun install
 Build and deploy the server as an E2B template:
 
 ```bash
-bun run build:e2b
+npm run build:e2b
 ```
 
 This creates a sandbox template named `claude-agent-server` on E2B. The build process:
@@ -151,19 +151,19 @@ Your updated server will be deployed to E2B with the same template name.
 
 ## Available Scripts
 
-### `bun run build:e2b`
+### `npm run build:e2b`
 
 Builds and deploys the server as an E2B template. This is the main way to deploy your server to the cloud.
 
-### `bun run test:client`
+### `npm run test:client`
 
 Runs the example client (`packages/client/example-client.ts`) connected to an E2B sandbox. Requires both `E2B_API_KEY` and `ANTHROPIC_API_KEY` in your `.env` file.
 
-### `bun run start:server`
+### `npm run start:server`
 
 Starts the server locally on `http://localhost:3000`. Use this for local development and testing.
 
-### `bun run test:local`
+### `npm run test:local`
 
 Runs the example client connected to `localhost:3000`. Use this to test your local server changes before rebuilding the E2B image.
 
@@ -505,7 +505,7 @@ Open `http://localhost:3000/` in your browser to access the built-in test client
 Run the example client script:
 
 ```bash
-bun run test:client
+npm run test:client
 ```
 
 This will connect to the server (or E2B sandbox), send a few test messages, and display the responses.
@@ -516,7 +516,7 @@ This section provides additional details about E2B deployment. For the basic set
 
 ### Customizing the Template Name
 
-By default, `bun run build:e2b` creates a template named `claude-agent-server`. To use a different name, you can modify `packages/e2b-build/build.prod.ts` or specify it when using the client:
+By default, `npm run build:e2b` creates a template named `claude-agent-server`. To use a different name, you can modify `packages/e2b-build/build.prod.ts` or specify it when using the client:
 
 ```typescript
 import { ClaudeAgentClient } from '@dzhng/claude-agent'
@@ -543,7 +543,7 @@ When you use the client library with E2B:
 To test with E2B, simply run:
 
 ```bash
-bun run test:client
+npm run test:client
 ```
 
 This runs `packages/client/example-client.ts` which creates an E2B sandbox, connects to it, runs test commands, and cleans up.
@@ -558,8 +558,8 @@ const template = Template()
   .runCmd('sudo apt install -y git')      // Install git
   .gitClone('https://github.com/...', ...) // Clone repository
   .setWorkdir('/home/user/app')           // Set working directory
-  .runCmd('bun install')                  // Install dependencies
-  .setStartCmd('bun packages/server/index.ts', waitForPort(3000)) // Start server
+  .runCmd('npm install')                  // Install dependencies
+  .setStartCmd('npm packages/server/index.ts', waitForPort(3000)) // Start server
 ```
 
 You can customize this template to:

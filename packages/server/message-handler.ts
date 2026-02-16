@@ -1,5 +1,5 @@
 import { query, type SDKUserMessage } from '@anthropic-ai/claude-agent-sdk'
-import { type ServerWebSocket } from 'bun'
+import { type WebSocket, type RawData } from 'ws'
 
 import { type WSInputMessage, type WSOutputMessage } from './message-types'
 
@@ -9,8 +9,8 @@ export type MessageHandlerContext = {
 }
 
 export async function handleMessage(
-  ws: ServerWebSocket,
-  message: string | Buffer,
+  ws: WebSocket,
+  message: RawData,
   context: MessageHandlerContext,
 ) {
   try {
