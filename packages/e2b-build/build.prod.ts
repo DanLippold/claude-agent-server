@@ -11,7 +11,7 @@ import {
 } from '../server/const'
 
 const template = Template()
-  .fromNodeImage('22')
+  .fromNodeImage('lts')
   .runCmd('pwd')
   .makeDir(`/home/user/${WORKSPACE_DIR_NAME}`)
   .runCmd('sudo apt install -y git')
