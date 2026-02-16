@@ -16,7 +16,7 @@ const template = Template()
   .makeDir(`/home/user/${WORKSPACE_DIR_NAME}`)
   .runCmd('sudo apt install -y git')
   .skipCache()
-  .gitClone('https://github.com/dzhng/claude-agent-server', '/home/user/app', {
+  .gitClone('https://github.com/DanLippold/claude-agent-server', '/home/user/app', {
     branch: 'main',
   })
   .setWorkdir('/home/user/app')
